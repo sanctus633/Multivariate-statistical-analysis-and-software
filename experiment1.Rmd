@@ -1,0 +1,154 @@
+---
+title: "Experiment 1"
+author: "David Liu"
+date: "2024-03-29"
+output:
+  pdf_document:
+    latex_engine: xelatex
+  word_document: default
+  html_document:
+    df_print: paged
+documentclass: ctexart
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+options(warn = -1)
+```
+
+# 课本复现
+
+```{r}
+library(MASS)
+library(ade4)
+library(scatterplot3d)
+data(iris)
+
+par(mar = c(0, 0, 0, 0))
+pane1 <- function(X, Y) {
+  XY <- cbind.data.frame(X, Y)
+  s.class(XY, iris$Species, include.ori = F, add.p = T, clab = 1.5,
+          col = c("blue", "black", "red"), cpoi = 2, csta = 0.5)
+}
+pairs(iris[, 1:4], panel = pane1)
+
+detach(package:ade4) # 释放内存
+
+par(mfrow = c(2, 2)); mar0 = c(3, 3, 1, 3)
+scatterplot3d(iris[, 1], iris[, 2], iris[, 3], mar = mar0, 
+              color = c("blue","black", "red")[iris$Species], pch = 19,xlab = "Sepal Length",ylab = " Sepal Width",zlab = "Petal Length")
+scatterplot3d(iris[, 2], iris[, 3], iris[, 4], mar = mar0, 
+              color = c("blue","black", "red")[iris$Species], pch = 19,xlab = "Sepal Width",ylab = "Petal Length",zlab = "Petal Width")
+scatterplot3d(iris[, 3], iris[, 4], iris[, 1], mar = mar0, 
+              color = c("blue","black", "red")[iris$Species], pch = 19,xlab = "Petal Length",ylab = "Petal Width",zlab = "Sepal Length")
+scatterplot3d(iris[, 4], iris[, 1], iris[, 2], mar = mar0, 
+              color = c("blue","black", "red")[iris$Species], pch = 19,xlab = "Petal Width",ylab = "Sepal Length",zlab = "Sepal Width")
+detach(package:scatterplot3d)
+```
+
+# 课后习题
+
+## 习题5
+
+1. 绘制按物种分组的轮廓图、雷达图和气泡图
+
+- 轮廓图
+
+```{r}
+library(ggplot2)
+library(GGally)
+ggparcoord(iris, columns = 1:4, groupColumn = 5, scale = "globalminmax") + 
+theme_bw() +
+labs(y = "Length")
+detach(package:GGally)
+```
+
+- 雷达图
+
+```{r}
+library(ggiraphExtra)
+ggRadar(data=iris, aes(group=Species), alpha=0.1)
+detach(package:ggiraphExtra)
+```
+
+- 气泡图
+
+```{r}
+library(DescTools)
+par(mfrow = c(2, 2), mar = c(4, 5, 2, 2))
+
+bubble <- function(x, y, area){
+  colors <- c("setosa"="red", "versicolor"="green", "virginica"="blue")
+  PlotBubble(x, y, col=colors[iris$Species],xlab=substitute(x),ylab=substitute(y),
+             cex=0.1, area=area)
+}
+
+
+bubble(iris$Sepal.Length, iris$Sepal.Width, iris$Petal.Length)
+bubble(iris$Sepal.Length, iris$Sepal.Width, iris$Petal.Width)
+bubble(iris$Petal.Length, iris$Petal.Width, iris$Sepal.Length)
+bubble(iris$Petal.Length, iris$Petal.Width, iris$Sepal.Width)
+
+detach(package:DescTools)
+```
+
+2. 绘制星图和脸谱图
+
+- 星图
+
+```{r}
+data.m=as.matrix(iris[,1:4])
+rownames(data.m) = iris[,5]
+stars(data.m,draw.segments=T,cex=0.45, key.loc=c(30, 1.4), mar=c(0.1,1,0.1,0.1))
+```
+
+- 脸谱图
+
+画出部分数据脸谱，150行数据无法全部画出
+
+```{r}
+library(aplpack)
+set.seed(210810209)
+faces(data.m[sample(1:nrow(data.m), 28, replace=F),], face.type = "ellipse", scale=T)
+detach(package:aplpack)
+```
+
+## 习题6
+
+1. 绘制该数据集的矩阵散点图
+
+```{r}
+data(mtcars)
+
+library(GGally)
+ggpairs(mtcars)
+detach(package:GGally)
+
+```
+
+2. 绘制该数据集中任意三个变量的三维散点图和气泡图
+
+以下两张图片均选择disp, wt, carb作为三个特征变量绘图
+
+- 三维散点图
+
+```{r}
+library(scatterplot3d)
+
+scatterplot3d(x=mtcars$disp, y=mtcars$wt, z=mtcars$carb,
+              color = "steelblue", pch = 16, mar=c(4, 3, 1, 7),
+              xlab = "disp",ylab = "wt",zlab = "carb")
+detach(package:scatterplot3d)
+```
+
+- 气泡图
+
+```{r}
+library(DescTools)
+
+PlotBubble(x=mtcars$disp, y=mtcars$wt, col="steelblue",
+           xlab="disp",ylab="wt",
+           cex=0.1, area=mtcars$carb)
+
+detach(package:DescTools)
+```
